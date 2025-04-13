@@ -1,4 +1,4 @@
-module discord-bot
+module github.com/MorningStella/discord-todo
 
 go 1.23.1
 

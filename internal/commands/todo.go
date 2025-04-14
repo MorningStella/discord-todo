@@ -7,6 +7,47 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// CommandHandler is a function type that handles Discord interactions
+
+// buildBaseRequestBody creates a common request structure from interaction data
+func buildBaseRequestBody(
+	i *discordgo.InteractionCreate,
+	commandName string,
+) map[string]interface{} {
+	return map[string]interface{}{
+		"channel_id":   i.ChannelID,
+		"channel_name": "", // Fill this if available from interaction
+		"command":      commandName,
+		"response_url": "", // Fill this if available from interaction
+		"team_domain":  "", // Fill this if available from interaction
+		"team_id":      i.GuildID,
+		"token":        "", // Fill this if available from interaction
+		"trigger_id":   i.ID,
+		"user_id":      i.Member.User.ID,
+		"user_name":    i.Member.User.Username,
+	}
+}
+
+// executeTodoRequest executes a todo API request and handles response/errors
+func executeTodoRequest(
+	s *discordgo.Session,
+	i *discordgo.InteractionCreate,
+	apiBaseURL string,
+	requestBody map[string]interface{},
+	todoAction TodoAction,
+	errorPrefix string,
+) {
+	apiClient := api.NewClient(apiBaseURL)
+	message, err := apiClient.SendTodoRequest(requestBody, todoAction.String())
+	if err != nil {
+		log.Printf("Error with %s operation: %v", todoAction, err)
+		respondError(s, i, errorPrefix+err.Error())
+		return
+	}
+
+	respond(s, i, message)
+}
+
 // NewAddTodoCommand creates a new todo command definition and handler
 func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
@@ -34,40 +75,16 @@ func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comman
 		}
 
 		todoText := options[0].StringValue()
-		username := i.Member.User.Username
-		userId := i.Member.User.ID
-		channelId := i.ChannelID
+		requestBody := buildBaseRequestBody(i, "/todo-add")
+		requestBody["text"] = todoText
 
-		// Build the request based on command data
-		requestBody := map[string]interface{}{
-			"channel_id":   channelId,
-			"channel_name": "", // Fill this if available from interaction
-			"command":      "/todo-add",
-			"response_url": "", // Fill this if available from interaction
-			"team_domain":  "", // Fill this if available from interaction
-			"team_id":      i.GuildID,
-			"text":         todoText,
-			"token":        "", // Fill this if available from interaction
-			"trigger_id":   i.ID,
-			"user_id":      userId,
-			"user_name":    username,
-		}
-
-		apiClient := api.NewClient(apiBaseURL)
-		message, err := apiClient.SendTodoRequest(requestBody, "add")
-		if err != nil {
-			log.Printf("Error adding todo: %v", err)
-			respondError(s, i, "Failed to add your todo item: "+err.Error())
-			return
-		}
-
-		// Send success response with the actual message from the API
-		respond(s, i, message)
+		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionAdd, "Failed to add your todo item: ")
 	}
 
 	return cmd, handler
 }
 
+// NewListTodoCommand creates a command to list todos
 func NewListTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "todo-list",
@@ -78,34 +95,77 @@ func NewListTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comma
 	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Printf("Listing todo...")
 
-		username := i.Member.User.Username
-		userId := i.Member.User.ID
-		channelId := i.ChannelID
+		requestBody := buildBaseRequestBody(i, "/todo-list")
+		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionList, "Failed to list your todo items: ")
+	}
 
-		// Build the request based on command data
-		requestBody := map[string]interface{}{
-			"channel_id":   channelId,
-			"channel_name": "", // Fill this if available from interaction
-			"command":      "/todo-list",
-			"response_url": "", // Fill this if available from interaction
-			"team_domain":  "", // Fill this if available from interaction
-			"team_id":      i.GuildID,
-			"token":        "", // Fill this if available from interaction
-			"trigger_id":   i.ID,
-			"user_id":      userId,
-			"user_name":    username,
-		}
+	return cmd, handler
+}
 
-		apiClient := api.NewClient(apiBaseURL)
-		message, err := apiClient.SendTodoRequest(requestBody, "list")
-		if err != nil {
-			log.Printf("Error adding todo: %v", err)
-			respondError(s, i, "Failed to add your todo item: "+err.Error())
+// NewCompleteTodoCommand creates a command to complete todos
+func NewCompleteTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "todo-done",
+		Description: "Complete todo by id",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "id",
+				Description: "The todo item ID to mark as complete",
+				Required:    true,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		log.Printf("Completing todo...")
+
+		options := i.ApplicationCommandData().Options
+		if len(options) == 0 {
+			respondError(s, i, "No todo item ID provided.")
 			return
 		}
 
-		// Send success response with the actual message from the API
-		respond(s, i, message)
+		todoID := options[0].StringValue()
+		requestBody := buildBaseRequestBody(i, "/todo-done")
+		requestBody["text"] = todoID
+
+		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionDone, "Failed to complete your todo item: ")
+	}
+
+	return cmd, handler
+}
+
+func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "todo-update",
+		Description: "Update todo by id",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "text",
+				Description: "Update todo command",
+				Required:    true,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		log.Printf("Completing todo...")
+
+		options := i.ApplicationCommandData().Options
+		if len(options) == 0 {
+			respondError(s, i, "No todo item ID provided.")
+			return
+		}
+
+		text := options[0].StringValue()
+		requestBody := buildBaseRequestBody(i, "/todo-update")
+		requestBody["text"] = text
+
+		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionUpdate, "Failed to complete your todo item: ")
 	}
 
 	return cmd, handler
@@ -113,20 +173,28 @@ func NewListTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comma
 
 // respond sends a response to a Discord interaction
 func respond(s *discordgo.Session, i *discordgo.InteractionCreate, content string) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: content,
 		},
 	})
+
+	if err != nil {
+		log.Printf("Error responding to interaction: %v", err)
+	}
 }
 
 // respondError sends an error response to a Discord interaction
 func respondError(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Error: " + message,
 		},
 	})
+
+	if err != nil {
+		log.Printf("Error sending error response: %v", err)
+	}
 }

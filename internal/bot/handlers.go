@@ -12,17 +12,25 @@ func (b *Bot) registerCommands() {
 	completeTodoCmd, completeTodoHandler := commands.NewCompleteTodoCommand(b.config.APIBaseURL)
 	updateTodoCmd, updateTodoHandler := commands.NewUpdateTodoCommand(b.config.APIBaseURL)
 
+	addRemindCmd, addRemindHandler := commands.NewAddRemindCommand(b.config.APIBaseURL)
+	addOneRemindCmd, addOneRemindHandler := commands.NewAddOneRemindCommand(b.config.APIBaseURL)
+
 	// Add commands to the bot's command list
 	b.commands = append(b.commands, todoCmd)
 	b.commands = append(b.commands, listTodoCmd)
 	b.commands = append(b.commands, completeTodoCmd)
 	b.commands = append(b.commands, updateTodoCmd)
+	b.commands = append(b.commands, addRemindCmd)
+	b.commands = append(b.commands, addRemindCmd)
+	b.commands = append(b.commands, addOneRemindCmd)
 
 	// Register command handlers
 	b.commandHandlers[todoCmd.Name] = todoHandler
 	b.commandHandlers[listTodoCmd.Name] = listTodoHandler
 	b.commandHandlers[completeTodoCmd.Name] = completeTodoHandler
 	b.commandHandlers[updateTodoCmd.Name] = updateTodoHandler
+	b.commandHandlers[addRemindCmd.Name] = addRemindHandler
+	b.commandHandlers[addOneRemindCmd.Name] = addOneRemindHandler
 
 	// Add more commands here as needed:
 	// someCmd, someHandler := commands.NewSomeCommand()

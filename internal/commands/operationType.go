@@ -1,14 +1,14 @@
 package commands
 
-type TodoAction string
+type Action string
 
 const (
-	TodoActionAdd    TodoAction = "add"
-	TodoActionList   TodoAction = "list"
-	TodoActionDone   TodoAction = "done"
-	TodoActionUpdate TodoAction = "update"
+	TodoActionAdd    Action = "add"
+	TodoActionList   Action = "list"
+	TodoActionDone   Action = "done"
+	TodoActionUpdate Action = "update"
 )
 
-func (a TodoAction) String() string {
+func (a Action) String() string {
 	return string(a)
 }

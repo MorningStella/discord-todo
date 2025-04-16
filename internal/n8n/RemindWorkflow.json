@@ -1,0 +1,975 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "discord/todo/reminds",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-860, 180],
+      "id": "fd5dd2d8-609e-4cf9-9f19-4ddd85f79436",
+      "name": "Webhook",
+      "webhookId": "69904d2e-0d4b-494e-a04d-ebb627b648b4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e9d2ff7f-314a-438e-af23-60b23248b274"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Add Remind"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c9834751-9110-4926-975e-794d353aca3a",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "List Reminds"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6fc1c634-9af2-4ffe-af62-26849c844146",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Update Remind"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dfa382bb-fb0c-47b4-9f15-4fc09d0f4c57",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "disable",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Disable Remind"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f967143e-8e8a-4e54-b5f4-b0236e9702be",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "enable",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Enable Remind"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "43ba1476-5c38-4733-b0aa-8937ca5b5c6d",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "add-one",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "add one remind"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [-620, 140],
+      "id": "fbf26ff9-352b-4f1e-956d-f82454927cfa",
+      "name": "Determine Action"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "remind",
+        "fields": "id,enable,when,channel_id,last_triggered_at,creator_id,notify_channel_id,channel_name,text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [1000, 40],
+      "id": "deee1d78-e45b-4f4d-8fd9-ffb374caaa93",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "ylmRVu1LnsQIMGNI",
+          "name": "discord-todo-momgo-dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "max",
+              "field": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [400, 100],
+      "id": "65fada99-ec05-4228-9c3a-a17a212f9dd6",
+      "name": "Get Max Id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "={{ $json.max_id.toNumber() +1 }} ",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [600, 100],
+      "id": "98a6dd15-d55f-41ae-9f12-991a67ddcbdc",
+      "name": "Set Max ID + 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, -100],
+      "id": "58d2410a-f139-4d88-8ccc-f887e6f0a3e6",
+      "name": "Set Id 1"
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [-20, 20],
+      "id": "e92c20b5-5993-4d83-8050-1418fb74608e",
+      "name": "Find All Existed Reminds",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "ylmRVu1LnsQIMGNI",
+          "name": "discord-todo-momgo-dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e894ab39-3f0e-4751-aac7-d796b3e8180f",
+              "leftValue": "={{ $('Find All Existed Reminds').item.json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [200, 20],
+      "id": "e8b2470a-92b8-4615-bf75-c71ec0cba568",
+      "name": "If Exists Reminds"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
+              "name": "notify_channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
+              "name": "when",
+              "value": "={{ $('Todo Creation Arg Converter1').item.json.when }}",
+              "type": "string"
+            },
+            {
+              "id": "1e7580ec-82af-4669-8882-03ce3c2c224e",
+              "name": "user_name",
+              "value": "={{ $('Webhook').item.json.body.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "1ca7cafa-d571-465c-ad1c-867545b206f2",
+              "name": "enable",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "da352e0d-5930-4488-8811-ab7a5d80dfe9",
+              "name": "creator_id",
+              "value": "={{ $('Webhook').item.json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "62b81af6-cd68-4da0-97ab-04ee62cb40f2",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "dd416097-6181-4c31-8ce0-e9a8d6f72da0",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "668baf58-13ab-48ba-b687-ac8658786c2f",
+              "name": "last_triggered_at",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "ca3caaa3-b258-47e8-a121-b6311484ff87",
+              "name": "text",
+              "value": "={{ $('Todo Creation Arg Converter1').item.json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [820, 20],
+      "id": "20ecd5bd-cfe9-4b14-9138-acfad0036c53",
+      "name": "Set Insert Values",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body.text\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet when = null;\nlet text = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'when') {\n        when = value;\n    } else if (key ==='text')\n    {\n      text = value;\n    }\n}\n\n// Return the results\nreturn { when, text };"
+      },
+      "id": "4514b69f-7cdd-4f61-ac51-c73713c264ba",
+      "name": "Todo Creation Arg Converter1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-280, 0]
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [-300, 160],
+      "id": "911a143e-05f6-4e69-b937-641d79e9f86e",
+      "name": "Find All Existed Reminds1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "ylmRVu1LnsQIMGNI",
+          "name": "discord-todo-momgo-dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.toJsonString() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2060, 540],
+      "id": "f6749cc4-c096-491a-9a55-5b22acc985a1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "077ffe65-4b38-4b7e-afb0-6a9369e7ca59",
+              "name": "message",
+              "value": "={{ $json.formattedText }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [700, 280],
+      "id": "f6bf6942-7c95-4e6c-9d72-163d4a3533e6",
+      "name": "Set List Remind Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "077ffe65-4b38-4b7e-afb0-6a9369e7ca59",
+              "name": "message",
+              "value": "Remind Added Sucessfully!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1180, 40],
+      "id": "9cb15460-b77e-49f2-bd84-42c4171a1ae2",
+      "name": "Set Add Remind Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the fields we want to include\nconst fields = [\"id\", \"enable\", \"when\", \"text\"];\n\n// Create a readable string representation for each item\nlet result = \"\";\n\ndata.forEach((item, index) => {\n  // Add a separator between items\n  if (index > 0) {\n    result += \"\\n\" + \"-\".repeat(30) + \"\\n\\n\";\n  }\n  \n  // Add each field with a label\n  fields.forEach(field => {\n    if (item[field] !== undefined && item[field] !== \"\") {\n      result += `${field}: ${item[field]}\\n`;\n    }\n  });\n});\n\n// Return the formatted string\nreturn [{\n  json: {\n    formattedText: result\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 220],
+      "id": "a52e2bde-9543-42a7-bc40-33ca1094280a",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body.text;\nconst regex = /(\\d+)/;\nlet id = null;\n\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[1]);    \n}\n\n// 返回包含 id 和可選的 comment 的對象\nreturn { id };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-320, 580],
+      "id": "9fa8b514-f715-4f72-b10b-5b90abaf4ebf",
+      "name": "Get Id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10f4ab02-7c65-49d2-9f8b-3be363f5a408",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [80, 600],
+      "id": "d23b12b3-dcb8-43aa-901f-39387c5e30a0",
+      "name": "Set Id Field"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9739ca52-42f0-4775-b251-c0db1058b0d4",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [340, 600],
+      "id": "16ede7e8-d9ac-4309-9d27-7ff8bc929c30",
+      "name": "Set Id & Replace \""
+    },
+    {
+      "parameters": {
+        "content": "\n## avoid double quote",
+        "height": 260,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [260, 540],
+      "id": "ef80ab48-466b-4abd-93c9-09b8777bbec3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').first().json.body.channel_id }}\"},{\"id\":\"{{ $json.id }}\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [-100, 600],
+      "id": "200f2425-ef3c-47df-99cf-f34d4a2dc53b",
+      "name": "Find Remind By Id",
+      "credentials": {
+        "mongoDb": {
+          "id": "ylmRVu1LnsQIMGNI",
+          "name": "discord-todo-momgo-dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "remind",
+        "updateKey": "=_id",
+        "fields": "enable",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [1000, 620],
+      "id": "19cfb875-91d6-47bd-a15e-407120d611d6",
+      "name": "Update Remind",
+      "credentials": {
+        "mongoDb": {
+          "id": "ylmRVu1LnsQIMGNI",
+          "name": "discord-todo-momgo-dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7c95a4e7-ef63-4de9-8746-1872f01da4c2",
+              "leftValue": "={{ $('Determine Action').item.json.query.action }}",
+              "rightValue": "disable",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [560, 600],
+      "id": "5718bd3d-88c9-4f0d-b339-6a284bedf3dc",
+      "name": "If Disable"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "47f1bb64-906f-4449-a4e7-8aca6af53540",
+              "name": "enable",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "b1bd2818-21dd-4b26-af87-01c860b7659b",
+              "name": "_id",
+              "value": "={{ $('Set Id & Replace \"').item.json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [760, 520],
+      "id": "59aa9024-eaf9-4873-878c-804d0dfd0e49",
+      "name": "Set Disable"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "47f1bb64-906f-4449-a4e7-8aca6af53540",
+              "name": "enable",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "748bdf02-f760-4e10-a3c6-358a2505ae84",
+              "name": "_id",
+              "value": "={{ $('Set Id & Replace \"').item.json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [760, 680],
+      "id": "76a892a6-e467-4be7-8dd4-bc2b0cb29d91",
+      "name": "Set Enable"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "077ffe65-4b38-4b7e-afb0-6a9369e7ca59",
+              "name": "message",
+              "value": "=Remind edited successfully🎉\n-------------------\nid: {{ $('Find Remind By Id').item.json.id }}\ntext: \nwhen: {{ $('Find Remind By Id').item.json.when }}\nenable: {{ $json.enable }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1200, 620],
+      "id": "e8e6bc94-be56-4b28-bd2f-d5e41c67846b",
+      "name": "Set Enable/Disable Remind Message"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Determine Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Action": {
+      "main": [
+        [
+          {
+            "node": "Todo Creation Arg Converter1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find All Existed Reminds1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Get Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Todo Creation Arg Converter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Set Add Remind Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Max Id": {
+      "main": [
+        [
+          {
+            "node": "Set Max ID + 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Max ID + 1": {
+      "main": [
+        [
+          {
+            "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id 1": {
+      "main": [
+        [
+          {
+            "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Existed Reminds": {
+      "main": [
+        [
+          {
+            "node": "If Exists Reminds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Exists Reminds": {
+      "main": [
+        [
+          {
+            "node": "Set Id 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Max Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Insert Values": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Todo Creation Arg Converter1": {
+      "main": [
+        [
+          {
+            "node": "Find All Existed Reminds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Existed Reminds1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set List Remind Message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Add Remind Message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Set List Remind Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Id": {
+      "main": [
+        [
+          {
+            "node": "Find Remind By Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id Field": {
+      "main": [
+        [
+          {
+            "node": "Set Id & Replace \"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id & Replace \"": {
+      "main": [
+        [
+          {
+            "node": "If Disable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Remind By Id": {
+      "main": [
+        [
+          {
+            "node": "Set Id Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Remind": {
+      "main": [
+        [
+          {
+            "node": "Set Enable/Disable Remind Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Disable": {
+      "main": [
+        [
+          {
+            "node": "Set Disable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Enable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Disable": {
+      "main": [
+        [
+          {
+            "node": "Update Remind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Enable": {
+      "main": [
+        [
+          {
+            "node": "Update Remind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Enable/Disable Remind Message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7474d84d2b834c864715cc1139cc946616c2310c4f45afb5a0945ca7fc78e0d9"
+  }
+}

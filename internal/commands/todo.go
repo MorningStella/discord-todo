@@ -34,7 +34,7 @@ func executeTodoRequest(
 	i *discordgo.InteractionCreate,
 	apiBaseURL string,
 	requestBody map[string]interface{},
-	todoAction TodoAction,
+	todoAction Action,
 	errorPrefix string,
 ) {
 	apiClient := api.NewClient(apiBaseURL)

@@ -15,6 +15,11 @@ func (b *Bot) registerCommands() {
 	addRemindCmd, addRemindHandler := commands.NewAddRemindCommand(b.config.APIBaseURL)
 	addOneRemindCmd, addOneRemindHandler := commands.NewAddOneRemindCommand(b.config.APIBaseURL)
 	listRemindCmd, listRemindHandler := commands.NewListRemindsCommand(b.config.APIBaseURL)
+	// Enable and disable remind commands
+	enableRemindCmd, enableRemindHandler := commands.NewEnableRemindsCommand(b.config.APIBaseURL)
+	disableRemindCmd, disableRemindHandler := commands.NewDisableRemindsCommand(b.config.APIBaseURL)
+
+	updateRemindCmd, updateRmindaddOneRemindHandler := commands.NewUpdateRemindCommand(b.config.APIBaseURL)
 
 	// Add commands to the bot's command list
 	b.commands = append(b.commands, todoCmd)
@@ -25,6 +30,9 @@ func (b *Bot) registerCommands() {
 	b.commands = append(b.commands, addRemindCmd)
 	b.commands = append(b.commands, addOneRemindCmd)
 	b.commands = append(b.commands, listRemindCmd)
+	b.commands = append(b.commands, enableRemindCmd)
+	b.commands = append(b.commands, disableRemindCmd)
+	b.commands = append(b.commands, updateRemindCmd)
 
 	// Register command handlers
 	b.commandHandlers[todoCmd.Name] = todoHandler
@@ -34,9 +42,7 @@ func (b *Bot) registerCommands() {
 	b.commandHandlers[addRemindCmd.Name] = addRemindHandler
 	b.commandHandlers[addOneRemindCmd.Name] = addOneRemindHandler
 	b.commandHandlers[listRemindCmd.Name] = listRemindHandler
-
-	// Add more commands here as needed:
-	// someCmd, someHandler := commands.NewSomeCommand()
-	// b.commands = append(b.commands, someCmd)
-	// b.commandHandlers[someCmd.Name] = someHandler
+	b.commandHandlers[enableRemindCmd.Name] = enableRemindHandler
+	b.commandHandlers[disableRemindCmd.Name] = disableRemindHandler
+	b.commandHandlers[updateRemindCmd.Name] = updateRmindaddOneRemindHandler
 }

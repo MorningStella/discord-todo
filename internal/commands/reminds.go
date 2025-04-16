@@ -12,6 +12,7 @@ import (
 const (
 	whenParam = "--when"
 	textParam = "--text"
+	idParam   = "--id"
 )
 
 // NewAddRemindCommand creates a command to add a reminder
@@ -142,6 +143,127 @@ func NewListRemindsCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Co
 
 		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
 		executeTodoRequest(s, i, endpoint, requestBody, RemindActionList, "Failed to list your reminders: ")
+	}
+
+	return cmd, handler
+}
+
+func NewEnableRemindsCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "remind-enable",
+		Description: "Enable reminders",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "id",
+				Description: "The ID of the reminder",
+				Required:    true,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+		options := i.ApplicationCommandData().Options
+		id := strings.TrimSpace(options[0].StringValue())
+
+		todoText := fmt.Sprintf("%s=%s", idParam, id)
+
+		requestBody := buildBaseRequestBody(i, "/todo-remind-enable")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
+		requestBody["text"] = todoText
+
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionEnable, "Failed to enable your reminder: ")
+	}
+
+	return cmd, handler
+}
+
+func NewDisableRemindsCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "remind-disable",
+		Description: "Disable reminders",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "id",
+				Description: "The ID of the reminder",
+				Required:    true,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		id := strings.TrimSpace(options[0].StringValue())
+
+		todoText := fmt.Sprintf("%s=%s", idParam, id)
+
+		requestBody := buildBaseRequestBody(i, "/todo-remind-disable")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
+		requestBody["text"] = todoText
+
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionDisable, "Failed to disable your reminder: ")
+	}
+
+	return cmd, handler
+}
+
+func NewUpdateRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "remind-update",
+		Description: "Update reminders",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "id",
+				Description: "The ID of the reminder",
+				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "when",
+				Description: "Cron timing setting (e.g., '0 9 * * 1' for every Monday at 9am)",
+				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "text",
+				Description: "Reminder text",
+				Required:    true,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		options := i.ApplicationCommandData().Options
+		id := strings.TrimSpace(options[0].StringValue())
+
+		todoText := fmt.Sprintf("%s=%s", idParam, id)
+
+		requestBody := buildBaseRequestBody(i, "/todo-remind-update")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
+		requestBody["text"] = todoText
+
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionUpdate, "Failed to update your reminder: ")
 	}
 
 	return cmd, handler

@@ -3,10 +3,18 @@ package commands
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+// Constants for command parameters
+const (
+	whenParam = "--when"
+	textParam = "--text"
+)
+
+// NewAddRemindCommand creates a command to add a reminder
 func NewAddRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "remind-add",
@@ -15,7 +23,7 @@ func NewAddRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comm
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
 				Name:        "text",
-				Description: "The remind setting",
+				Description: "The reminder text",
 				Required:    true,
 			},
 		},
@@ -23,55 +31,117 @@ func NewAddRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comm
 
 	// Command handler
 	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		log.Printf("Adding remind")
+		log.Printf("Adding reminder")
 
 		// Get user input from the command options
 		options := i.ApplicationCommandData().Options
 		if len(options) == 0 {
-			respondError(s, i, "No remind item text provided.")
+			respondError(s, i, "No reminder text provided.")
 			return
 		}
 
-		todoText := options[0].StringValue()
-		requestBody := buildBaseRequestBody(i, "/todo-remind")
-		requestBody["text"] = todoText
+		text := options[0].StringValue()
+		if strings.TrimSpace(text) == "" {
+			respondError(s, i, "Reminder text cannot be empty.")
+			return
+		}
 
-		executeTodoRequest(s, i, fmt.Sprintf("%s/reminds", apiBaseURL), requestBody, RemindActionAdd, "Failed to add your todo item: ")
+		requestBody := buildBaseRequestBody(i, "/todo-remind")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
+		requestBody["text"] = text
+
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionAdd, "Failed to add your reminder: ")
 	}
 
 	return cmd, handler
 }
 
+// NewAddOneRemindCommand creates a command to add a reminder with timing
 func NewAddOneRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "remind-add-one",
-		Description: "Add a new reminder",
+		Description: "Add a new reminder with specific timing",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "text",
-				Description: "The remind setting",
+				Name:        "when",
+				Description: "Cron timing setting (e.g., '0 9 * * 1' for every Monday at 9am)",
 				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "text",
+				Description: "Reminder text",
+				Required:    true, // Changed to true for clarity
 			},
 		},
 	}
 
 	// Command handler
 	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		log.Printf("Adding remind")
+		log.Printf("Adding timed reminder")
 
 		// Get user input from the command options
 		options := i.ApplicationCommandData().Options
-		if len(options) == 0 {
-			respondError(s, i, "No remind item text provided.")
+		if len(options) < 2 {
+			respondError(s, i, "Both timing and reminder text are required.")
 			return
 		}
 
-		todoText := options[0].StringValue()
+		when := strings.TrimSpace(options[0].StringValue())
+		if when == "" {
+			respondError(s, i, "Timing parameter cannot be empty.")
+			return
+		}
+
+		text := strings.TrimSpace(options[1].StringValue())
+		if text == "" {
+			respondError(s, i, "Reminder text cannot be empty.")
+			return
+		}
+
+		// Properly format the command parameters with spaces
+		todoText := fmt.Sprintf("%s=%s %s=%s", whenParam, when, textParam, text)
+
 		requestBody := buildBaseRequestBody(i, "/todo-remind-add-one")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
 		requestBody["text"] = todoText
 
-		executeTodoRequest(s, i, fmt.Sprintf("%s/reminds", apiBaseURL), requestBody, RemindActionAdd, "Failed to add your todo item: ")
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionAdd, "Failed to add your timed reminder: ")
+	}
+
+	return cmd, handler
+}
+
+// NewListRemindsCommand creates a command to list all reminders
+func NewListRemindsCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "remind-list",
+		Description: "List all your reminders",
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		log.Printf("Listing reminders")
+
+		requestBody := buildBaseRequestBody(i, "/todo-remind-list")
+		if requestBody == nil {
+			respondError(s, i, "Failed to build request data.")
+			return
+		}
+
+		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
+		executeTodoRequest(s, i, endpoint, requestBody, RemindActionList, "Failed to list your reminders: ")
 	}
 
 	return cmd, handler

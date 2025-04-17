@@ -1,13 +1,18 @@
 package commands
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/MorningStella/discord-todo/internal/api"
 	"github.com/bwmarrin/discordgo"
 )
 
-// CommandHandler is a function type that handles Discord interactions
+const (
+	contentParam = "-c"
+	tagParam     = "-t"
+	commentParam = "--comment"
+)
 
 // buildBaseRequestBody creates a common request structure from interaction data
 func buildBaseRequestBody(
@@ -56,9 +61,15 @@ func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comman
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "text",
+				Name:        "content",
 				Description: "The todo item text",
 				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "tag",
+				Description: "The tag for the todo item",
+				Required:    false,
 			},
 		},
 	}
@@ -74,7 +85,13 @@ func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comman
 			return
 		}
 
-		todoText := options[0].StringValue()
+		content := options[0].StringValue()
+		todoText := fmt.Sprintf("%s=\"%s\"", contentParam, content)
+		tag := options[1].StringValue()
+		if tag != "" {
+			todoText = fmt.Sprintf("%s %s=\"%s\"", todoText, tagParam, tag)
+		}
+
 		requestBody := buildBaseRequestBody(i, "/todo-add")
 		requestBody["text"] = todoText
 
@@ -114,39 +131,11 @@ func NewCompleteTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 				Description: "The todo item ID to mark as complete",
 				Required:    true,
 			},
-		},
-	}
-
-	// Command handler
-	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		log.Printf("Completing todo...")
-
-		options := i.ApplicationCommandData().Options
-		if len(options) == 0 {
-			respondError(s, i, "No todo item ID provided.")
-			return
-		}
-
-		todoID := options[0].StringValue()
-		requestBody := buildBaseRequestBody(i, "/todo-done")
-		requestBody["text"] = todoID
-
-		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionDone, "Failed to complete your todo item: ")
-	}
-
-	return cmd, handler
-}
-
-func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
-	cmd := &discordgo.ApplicationCommand{
-		Name:        "todo-update",
-		Description: "Update todo by id",
-		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "text",
-				Description: "Update todo command",
-				Required:    true,
+				Name:        "comment",
+				Description: "Optional comment for the completed todo item",
+				Required:    false,
 			},
 		},
 	}
@@ -161,9 +150,69 @@ func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Com
 			return
 		}
 
-		text := options[0].StringValue()
+		todoID := options[0].StringValue()
+		requestText := fmt.Sprintf("%s=\"%s\"", idParam, todoID)
+		comment := options[1].StringValue()
+
+		if comment != "" {
+			comment = fmt.Sprintf("%s=\"%s\"", commentParam, comment)
+			requestText = fmt.Sprintf("%s %s", requestText, comment)
+		}
+
+		requestBody := buildBaseRequestBody(i, "/todo-done")
+		requestBody["text"] = requestText
+		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionDone, "Failed to complete your todo item: ")
+	}
+
+	return cmd, handler
+}
+
+func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+	cmd := &discordgo.ApplicationCommand{
+		Name:        "todo-update",
+		Description: "Update todo by id",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "id",
+				Description: "The ID of the todo item",
+				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "content",
+				Description: "Update todo command",
+				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "tag",
+				Description: "The tag for the todo item",
+				Required:    false,
+			},
+		},
+	}
+
+	// Command handler
+	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		log.Printf("Completing todo...")
+
+		options := i.ApplicationCommandData().Options
+		if len(options) == 0 {
+			respondError(s, i, "No todo item ID provided.")
+			return
+		}
+
+		id := options[0].StringValue()
+		content := options[1].StringValue()
+		todoText := fmt.Sprintf("%s=\"%s\" %s=\"%s\"", idParam, id, contentParam, content)
+		tag := options[2].StringValue()
+		if tag != "" {
+			todoText = fmt.Sprintf("%s %s=\"%s\"", todoText, tagParam, tag)
+		}
+
 		requestBody := buildBaseRequestBody(i, "/todo-update")
-		requestBody["text"] = text
+		requestBody["text"] = todoText
 
 		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionUpdate, "Failed to complete your todo item: ")
 	}

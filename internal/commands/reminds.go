@@ -15,53 +15,6 @@ const (
 	idParam   = "--id"
 )
 
-// NewAddRemindCommand creates a command to add a reminder
-func NewAddRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
-	cmd := &discordgo.ApplicationCommand{
-		Name:        "remind-add",
-		Description: "Add a new reminder",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "text",
-				Description: "The reminder text",
-				Required:    true,
-			},
-		},
-	}
-
-	// Command handler
-	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		log.Printf("Adding reminder")
-
-		// Get user input from the command options
-		options := i.ApplicationCommandData().Options
-		if len(options) == 0 {
-			respondError(s, i, "No reminder text provided.")
-			return
-		}
-
-		text := options[0].StringValue()
-		if strings.TrimSpace(text) == "" {
-			respondError(s, i, "Reminder text cannot be empty.")
-			return
-		}
-
-		requestBody := buildBaseRequestBody(i, "/todo-remind")
-		if requestBody == nil {
-			respondError(s, i, "Failed to build request data.")
-			return
-		}
-
-		requestBody["text"] = text
-
-		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
-		executeTodoRequest(s, i, endpoint, requestBody, RemindActionAdd, "Failed to add your reminder: ")
-	}
-
-	return cmd, handler
-}
-
 // NewAddOneRemindCommand creates a command to add a reminder with timing
 func NewAddOneRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
@@ -107,7 +60,7 @@ func NewAddOneRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 		}
 
 		// Properly format the command parameters with spaces
-		todoText := fmt.Sprintf("%s=%s %s=%s", whenParam, when, textParam, text)
+		remindText := fmt.Sprintf("%s=%s %s=%s", whenParam, when, textParam, text)
 
 		requestBody := buildBaseRequestBody(i, "/todo-remind-add-one")
 		if requestBody == nil {
@@ -115,7 +68,7 @@ func NewAddOneRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 			return
 		}
 
-		requestBody["text"] = todoText
+		requestBody["text"] = remindText
 
 		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
 		executeTodoRequest(s, i, endpoint, requestBody, RemindActionAdd, "Failed to add your timed reminder: ")
@@ -251,8 +204,13 @@ func NewUpdateRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 	handler := func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		options := i.ApplicationCommandData().Options
 		id := strings.TrimSpace(options[0].StringValue())
+		when := strings.TrimSpace(options[1].StringValue())
+		remindText := fmt.Sprintf("%s=%s %s=%s", idParam, id, whenParam, when)
 
-		todoText := fmt.Sprintf("%s=%s", idParam, id)
+		text := strings.TrimSpace(options[2].StringValue())
+		if text != "" {
+			remindText = fmt.Sprintf("%s %s=%s", remindText, textParam, text)
+		}
 
 		requestBody := buildBaseRequestBody(i, "/todo-remind-update")
 		if requestBody == nil {
@@ -260,7 +218,7 @@ func NewUpdateRemindCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 			return
 		}
 
-		requestBody["text"] = todoText
+		requestBody["text"] = remindText
 
 		endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
 		executeTodoRequest(s, i, endpoint, requestBody, RemindActionUpdate, "Failed to update your reminder: ")

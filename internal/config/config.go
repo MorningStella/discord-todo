@@ -14,6 +14,7 @@ type Config struct {
 	BotToken       string
 	RemoveCommands bool
 	APIBaseURL     string
+	ReclaimApiKey  string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -51,6 +52,8 @@ func LoadConfig() *Config {
 	if cfg.BotToken == "" {
 		log.Println("Warning: BOT_TOKEN environment variable is not set")
 	}
+
+	cfg.ReclaimApiKey = os.Getenv("RECLAIM_API_KEY")
 
 	return cfg
 }

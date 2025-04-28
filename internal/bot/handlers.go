@@ -2,6 +2,7 @@ package bot
 
 import (
 	"github.com/MorningStella/discord-todo/internal/commands"
+	"github.com/MorningStella/discord-todo/internal/config"
 )
 
 // registerCommands registers all command definitions and handlers
@@ -20,6 +21,10 @@ func (b *Bot) registerCommands() {
 
 	updateRemindCmd, updateRmindaddOneRemindHandler := commands.NewUpdateRemindCommand(b.config.APIBaseURL)
 
+	cfg := config.LoadConfig()
+	// Reclaim task
+	reclaimTaskCmd, reclaimTaskHandler := commands.NewCreateReclaimTaskCommand(cfg)
+
 	// Add commands to the bot's command list
 	b.commands = append(b.commands, todoCmd)
 	b.commands = append(b.commands, listTodoCmd)
@@ -30,6 +35,7 @@ func (b *Bot) registerCommands() {
 	b.commands = append(b.commands, enableRemindCmd)
 	b.commands = append(b.commands, disableRemindCmd)
 	b.commands = append(b.commands, updateRemindCmd)
+	b.commands = append(b.commands, reclaimTaskCmd)
 
 	// Register command handlers
 	b.commandHandlers[todoCmd.Name] = todoHandler
@@ -41,4 +47,5 @@ func (b *Bot) registerCommands() {
 	b.commandHandlers[enableRemindCmd.Name] = enableRemindHandler
 	b.commandHandlers[disableRemindCmd.Name] = disableRemindHandler
 	b.commandHandlers[updateRemindCmd.Name] = updateRmindaddOneRemindHandler
+	b.commandHandlers[reclaimTaskCmd.Name] = reclaimTaskHandler
 }

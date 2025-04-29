@@ -7,13 +7,12 @@ import (
 	"time"
 
 	"github.com/MorningStella/discord-todo/internal/api"
-	"github.com/MorningStella/discord-todo/internal/config"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 // NewCreateReclaimTaskCommand creates a command to add a task to Reclaim.ai
-func NewCreateReclaimTaskCommand(cfg *config.Config) (*discordgo.ApplicationCommand, CommandHandler) {
+func NewCreateReclaimTaskCommand(reclaimClient *api.ReclaimClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "task-create",
 		Description: "Create a new task in Reclaim.ai",
@@ -246,7 +245,6 @@ func NewCreateReclaimTaskCommand(cfg *config.Config) (*discordgo.ApplicationComm
 		}
 
 		// Call the Reclaim API
-		reclaimClient := api.NewReclaimClient("test", cfg.ReclaimApiKey)
 		response, err := reclaimClient.CreateTask(task)
 		if err != nil {
 			respondError(s, i, fmt.Sprintf("Failed to create Reclaim task: %v", err))

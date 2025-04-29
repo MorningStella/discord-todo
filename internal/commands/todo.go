@@ -37,13 +37,12 @@ func buildBaseRequestBody(
 func executeTodoRequest(
 	s *discordgo.Session,
 	i *discordgo.InteractionCreate,
-	apiBaseURL string,
+	workflowClient *api.WorkflowClient,
 	requestBody map[string]interface{},
 	todoAction Action,
 	errorPrefix string,
 ) {
-	apiClient := api.NewClient(apiBaseURL)
-	message, err := apiClient.SendTodoRequest(requestBody, todoAction.String())
+	message, err := workflowClient.SendTodoRequest(requestBody, todoAction.String())
 	if err != nil {
 		log.Printf("Error with %s operation: %v", todoAction, err)
 		respondError(s, i, errorPrefix+err.Error())
@@ -54,7 +53,7 @@ func executeTodoRequest(
 }
 
 // NewAddTodoCommand creates a new todo command definition and handler
-func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+func NewAddTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "todo-add",
 		Description: "Add a new todo item",
@@ -95,14 +94,14 @@ func NewAddTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comman
 		requestBody := buildBaseRequestBody(i, "/todo-add")
 		requestBody["text"] = todoText
 
-		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionAdd, "Failed to add your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionAdd, "Failed to add your todo item: ")
 	}
 
 	return cmd, handler
 }
 
 // NewListTodoCommand creates a command to list todos
-func NewListTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+func NewListTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "todo-list",
 		Description: "List current channel todo items",
@@ -113,14 +112,14 @@ func NewListTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Comma
 		log.Printf("Listing todo...")
 
 		requestBody := buildBaseRequestBody(i, "/todo-list")
-		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionList, "Failed to list your todo items: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionList, "Failed to list your todo items: ")
 	}
 
 	return cmd, handler
 }
 
 // NewCompleteTodoCommand creates a command to complete todos
-func NewCompleteTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+func NewCompleteTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "todo-done",
 		Description: "Complete todo by id",
@@ -161,13 +160,13 @@ func NewCompleteTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, C
 
 		requestBody := buildBaseRequestBody(i, "/todo-done")
 		requestBody["text"] = requestText
-		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionDone, "Failed to complete your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionDone, "Failed to complete your todo item: ")
 	}
 
 	return cmd, handler
 }
 
-func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, CommandHandler) {
+func NewUpdateTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
 		Name:        "todo-update",
 		Description: "Update todo by id",
@@ -214,7 +213,7 @@ func NewUpdateTodoCommand(apiBaseURL string) (*discordgo.ApplicationCommand, Com
 		requestBody := buildBaseRequestBody(i, "/todo-update")
 		requestBody["text"] = todoText
 
-		executeTodoRequest(s, i, apiBaseURL, requestBody, TodoActionUpdate, "Failed to complete your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionUpdate, "Failed to complete your todo item: ")
 	}
 
 	return cmd, handler

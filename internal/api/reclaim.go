@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/MorningStella/discord-todo/internal/config"
 )
 
 // Client represents an API client for Reclaim.ai
@@ -18,11 +20,11 @@ type ReclaimClient struct {
 }
 
 // NewClient creates a new Reclaim API client
-func NewReclaimClient(baseURL string, token string) *ReclaimClient {
+func NewReclaimClient(cfg *config.Config) *ReclaimClient {
 	return &ReclaimClient{
-		baseURL:    baseURL,
+		baseURL:    cfg.ReclaimBaseUrl,
 		httpClient: &http.Client{Timeout: 10 * time.Second},
-		token:      token,
+		token:      cfg.ReclaimApiKey,
 	}
 }
 
@@ -66,7 +68,7 @@ func (c *ReclaimClient) CreateTask(task ReclaimTask) (map[string]interface{}, er
 	}
 
 	// Create request
-	req, err := http.NewRequest("POST", "https://api.app.reclaim.ai/api/tasks", bytes.NewBuffer(bodyData))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.baseURL, "tasks"), bytes.NewBuffer(bodyData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

@@ -8,23 +8,25 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/MorningStella/discord-todo/internal/config"
 )
 
-// Client represents an API client for external services
-type Client struct {
+// WorkflowClient represents an API client for external services
+type WorkflowClient struct {
 	baseURL    string
 	httpClient *http.Client
 }
 
-// NewClient creates a new API client
-func NewClient(baseURL string) *Client {
-	return &Client{
-		baseURL:    baseURL,
+// NewWorkflowClient creates a new API client
+func NewWorkflowClient(cfg *config.Config) *WorkflowClient {
+	return &WorkflowClient{
+		baseURL:    cfg.WorkflowBaseUrl,
 		httpClient: &http.Client{},
 	}
 }
 
-func (c *Client) SendTodoRequest(requestBody map[string]interface{}, action string) (string, error) {
+func (c *WorkflowClient) SendTodoRequest(requestBody map[string]interface{}, action string) (string, error) {
 	// Marshal the request body
 	bodyData, err := json.Marshal(requestBody)
 	if err != nil {

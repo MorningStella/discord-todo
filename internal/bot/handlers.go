@@ -1,29 +1,28 @@
 package bot
 
 import (
+	"github.com/MorningStella/discord-todo/internal/api"
 	"github.com/MorningStella/discord-todo/internal/commands"
-	"github.com/MorningStella/discord-todo/internal/config"
 )
 
 // registerCommands registers all command definitions and handlers
-func (b *Bot) registerCommands() {
+func (b *Bot) registerCommands(workflowClient *api.WorkflowClient, reclaimClient *api.ReclaimClient) {
 	// Get todo command
-	todoCmd, todoHandler := commands.NewAddTodoCommand(b.config.APIBaseURL)
-	listTodoCmd, listTodoHandler := commands.NewListTodoCommand(b.config.APIBaseURL)
-	completeTodoCmd, completeTodoHandler := commands.NewCompleteTodoCommand(b.config.APIBaseURL)
-	updateTodoCmd, updateTodoHandler := commands.NewUpdateTodoCommand(b.config.APIBaseURL)
+	todoCmd, todoHandler := commands.NewAddTodoCommand(workflowClient)
+	listTodoCmd, listTodoHandler := commands.NewListTodoCommand(workflowClient)
+	completeTodoCmd, completeTodoHandler := commands.NewCompleteTodoCommand(workflowClient)
+	updateTodoCmd, updateTodoHandler := commands.NewUpdateTodoCommand(workflowClient)
 
-	addOneRemindCmd, addOneRemindHandler := commands.NewAddOneRemindCommand(b.config.APIBaseURL)
-	listRemindCmd, listRemindHandler := commands.NewListRemindsCommand(b.config.APIBaseURL)
+	addOneRemindCmd, addOneRemindHandler := commands.NewAddOneRemindCommand(workflowClient)
+	listRemindCmd, listRemindHandler := commands.NewListRemindsCommand(workflowClient)
 	// Enable and disable remind commands
-	enableRemindCmd, enableRemindHandler := commands.NewEnableRemindsCommand(b.config.APIBaseURL)
-	disableRemindCmd, disableRemindHandler := commands.NewDisableRemindsCommand(b.config.APIBaseURL)
+	enableRemindCmd, enableRemindHandler := commands.NewEnableRemindsCommand(workflowClient)
+	disableRemindCmd, disableRemindHandler := commands.NewDisableRemindsCommand(workflowClient)
 
-	updateRemindCmd, updateRmindaddOneRemindHandler := commands.NewUpdateRemindCommand(b.config.APIBaseURL)
+	updateRemindCmd, updateRmindaddOneRemindHandler := commands.NewUpdateRemindCommand(workflowClient)
 
-	cfg := config.LoadConfig()
 	// Reclaim task
-	reclaimTaskCmd, reclaimTaskHandler := commands.NewCreateReclaimTaskCommand(cfg)
+	reclaimTaskCmd, reclaimTaskHandler := commands.NewCreateReclaimTaskCommand(reclaimClient)
 
 	// Add commands to the bot's command list
 	b.commands = append(b.commands, todoCmd)

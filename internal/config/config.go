@@ -10,11 +10,12 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	GuildID        string
-	BotToken       string
-	RemoveCommands bool
-	APIBaseURL     string
-	ReclaimApiKey  string
+	GuildID         string
+	BotToken        string
+	RemoveCommands  bool
+	WorkflowBaseUrl string
+	ReclaimBaseUrl  string
+	ReclaimApiKey   string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -43,17 +44,14 @@ func LoadConfig() *Config {
 	}
 
 	// Set API base URL with a fallback
-	cfg.APIBaseURL = os.Getenv("API_BASE_URL")
-	if cfg.APIBaseURL == "" {
-		cfg.APIBaseURL = "https://n8n.weiting.me/webhook-test/discord"
-	}
-
+	cfg.WorkflowBaseUrl = os.Getenv("API_BASE_URL")
 	// Validate required configuration
 	if cfg.BotToken == "" {
 		log.Println("Warning: BOT_TOKEN environment variable is not set")
 	}
 
 	cfg.ReclaimApiKey = os.Getenv("RECLAIM_API_KEY")
+	cfg.ReclaimBaseUrl = os.Getenv("RECLAIM_BASE_URL")
 
 	return cfg
 }

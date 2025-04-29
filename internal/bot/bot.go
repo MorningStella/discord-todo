@@ -3,6 +3,7 @@ package bot
 import (
 	"log"
 
+	"github.com/MorningStella/discord-todo/internal/api"
 	"github.com/MorningStella/discord-todo/internal/config"
 	"github.com/bwmarrin/discordgo"
 )
@@ -16,8 +17,8 @@ type Bot struct {
 	registeredCmds  []*discordgo.ApplicationCommand
 }
 
-// New creates a new bot instance
-func New(cfg *config.Config) (*Bot, error) {
+// NewDiscordBot creates a new bot instance
+func NewDiscordBot(cfg *config.Config, workflowClient *api.WorkflowClient, reclaimClient *api.ReclaimClient) (*Bot, error) {
 	session, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
 		return nil, err
@@ -30,7 +31,7 @@ func New(cfg *config.Config) (*Bot, error) {
 	}
 
 	// Register commands
-	bot.registerCommands()
+	bot.registerCommands(workflowClient, reclaimClient)
 
 	return bot, nil
 }

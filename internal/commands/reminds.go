@@ -16,6 +16,11 @@ const (
 	idParam   = "--id"
 )
 
+const (
+	remind = "todo/reminds"
+	todo   = "todo"
+)
+
 // NewAddOneRemindCommand creates a command to add a reminder with timing
 func NewAddOneRemindCommand(workflowClient *api.WorkflowClient) (*discordgo.ApplicationCommand, CommandHandler) {
 	cmd := &discordgo.ApplicationCommand{
@@ -71,7 +76,7 @@ func NewAddOneRemindCommand(workflowClient *api.WorkflowClient) (*discordgo.Appl
 
 		requestBody["text"] = remindText
 
-		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionAdd, "Failed to add your timed reminder: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionAdd, "Failed to add your timed reminder: ", remind)
 	}
 
 	return cmd, handler
@@ -93,9 +98,7 @@ func NewListRemindsCommand(workflowClient *api.WorkflowClient) (*discordgo.Appli
 			respondError(s, i, "Failed to build request data.")
 			return
 		}
-
-		// endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
-		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionList, "Failed to list your reminders: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionList, "Failed to list your reminders: ", remind)
 	}
 
 	return cmd, handler
@@ -132,7 +135,7 @@ func NewEnableRemindsCommand(workflowClient *api.WorkflowClient) (*discordgo.App
 		requestBody["text"] = todoText
 
 		// endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
-		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionEnable, "Failed to enable your reminder: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionEnable, "Failed to enable your reminder: ", remind)
 	}
 
 	return cmd, handler
@@ -168,7 +171,7 @@ func NewDisableRemindsCommand(workflowClient *api.WorkflowClient) (*discordgo.Ap
 		requestBody["text"] = todoText
 
 		// endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
-		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionDisable, "Failed to disable your reminder: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionDisable, "Failed to disable your reminder: ", remind)
 	}
 
 	return cmd, handler
@@ -221,7 +224,7 @@ func NewUpdateRemindCommand(workflowClient *api.WorkflowClient) (*discordgo.Appl
 		requestBody["text"] = remindText
 
 		// endpoint := fmt.Sprintf("%s/reminds", apiBaseURL)
-		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionUpdate, "Failed to update your reminder: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, RemindActionUpdate, "Failed to update your reminder: ", "reminds")
 	}
 
 	return cmd, handler

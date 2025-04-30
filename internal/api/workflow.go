@@ -26,7 +26,7 @@ func NewWorkflowClient(cfg *config.Config) *WorkflowClient {
 	}
 }
 
-func (c *WorkflowClient) SendTodoRequest(requestBody map[string]interface{}, action string) (string, error) {
+func (c *WorkflowClient) SendTodoRequest(requestBody map[string]interface{}, action string, resource string) (string, error) {
 	// Marshal the request body
 	bodyData, err := json.Marshal(requestBody)
 	if err != nil {
@@ -34,7 +34,7 @@ func (c *WorkflowClient) SendTodoRequest(requestBody map[string]interface{}, act
 	}
 
 	// Create and send request
-	req, err := http.NewRequest("POST", c.baseURL, bytes.NewBuffer(bodyData))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.baseURL, resource), bytes.NewBuffer(bodyData))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}

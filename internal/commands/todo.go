@@ -41,8 +41,9 @@ func executeTodoRequest(
 	requestBody map[string]interface{},
 	todoAction Action,
 	errorPrefix string,
+	resource string,
 ) {
-	message, err := workflowClient.SendTodoRequest(requestBody, todoAction.String())
+	message, err := workflowClient.SendTodoRequest(requestBody, todoAction.String(), resource)
 	if err != nil {
 		log.Printf("Error with %s operation: %v", todoAction, err)
 		respondError(s, i, errorPrefix+err.Error())
@@ -94,7 +95,7 @@ func NewAddTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.Applicati
 		requestBody := buildBaseRequestBody(i, "/todo-add")
 		requestBody["text"] = todoText
 
-		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionAdd, "Failed to add your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionAdd, "Failed to add your todo item: ", todo)
 	}
 
 	return cmd, handler
@@ -112,7 +113,7 @@ func NewListTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.Applicat
 		log.Printf("Listing todo...")
 
 		requestBody := buildBaseRequestBody(i, "/todo-list")
-		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionList, "Failed to list your todo items: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionList, "Failed to list your todo items: ", todo)
 	}
 
 	return cmd, handler
@@ -160,7 +161,7 @@ func NewCompleteTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.Appl
 
 		requestBody := buildBaseRequestBody(i, "/todo-done")
 		requestBody["text"] = requestText
-		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionDone, "Failed to complete your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionDone, "Failed to complete your todo item: ", todo)
 	}
 
 	return cmd, handler
@@ -213,7 +214,7 @@ func NewUpdateTodoCommand(workflowClient *api.WorkflowClient) (*discordgo.Applic
 		requestBody := buildBaseRequestBody(i, "/todo-update")
 		requestBody["text"] = todoText
 
-		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionUpdate, "Failed to complete your todo item: ")
+		executeTodoRequest(s, i, workflowClient, requestBody, TodoActionUpdate, "Failed to complete your todo item: ", todo)
 	}
 
 	return cmd, handler
